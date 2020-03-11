@@ -17,21 +17,31 @@
         {{ answer }}
       </b-list-group-item>
       </b-list-group>
-      <b-button variant="primary" href="#">Submit</b-button>
+      <b-button
+        variant="primary"
+        @click="submitAnswer"
+        :disabled="selectedIndex === null"
+      >
+          Submit
+      </b-button>
       <b-button @click="next" variant="success" href="#">Next</b-button>
     </b-jumbotron>
   </div>
 </template>
 
 <script>
+import _ from "lodash"
+
 export default {
   props: {
     currentQuestion: Object,
-    next: Function
+    next: Function,
+    increment: Function
   },
   data() {
     return {
-      selectedIndex: null
+      selectedIndex: null,
+      shuffledAnswers: []
     }
   },
   computed: {
@@ -41,10 +51,38 @@ export default {
       return answers
     }
   },
+  watch: {
+    /*
+    // 상위에서 currentQuestion이 변경되었을때 수행됨
+    currentQuestion() {
+      this.selectedIndex = null
+      this.shuffleAnswers()
+    }
+    */
+    currentQuestion: {
+      immediate: true,
+      handler() {
+        this.selectedIndex = null
+        this.shuffleAnswers()
+      }
+    }
+  },
   methods: {
     selectAnswer(index) {
       this.selectedIndex = index
       console.log("index:", this.selectedIndex)
+    },
+    submitAnswer() {
+      let isCorrect = false
+      if (this.selectedIndex === this.correctIndex) {
+        isCorrect = true
+      }
+
+      this.increment(isCorrect)
+    },
+    shuffleAnswers() {
+      let answers = [...this.currentQuestion.incorrect_answers, this.currentQuestion.correct_answer]
+      this.shuffledAnswers = _.shuffle(answers)
     }
   },
   mounted() {
